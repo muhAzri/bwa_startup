@@ -45,11 +45,6 @@ func main() {
 		log.Fatal("Error initializing database:", err)
 	}
 
-	err = db.AutoMigrate(&user.User{})
-	if err != nil {
-		log.Fatal("Error auto migrating database:", err)
-	}
-
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 	userHandler := handler.NewUserHandler(userService)
@@ -57,7 +52,8 @@ func main() {
 	router := gin.Default()
 	api := router.Group("api/v1")
 
-	api.POST("/user", userHandler.RegisterUserHandler)
+	api.POST("/user", userHandler.RegisterUser)
+	api.POST("/sessions", userHandler.Login)
 	router.Run()
 
 }
