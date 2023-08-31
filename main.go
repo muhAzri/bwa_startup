@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bwa_startup/auth"
 	"bwa_startup/handler"
 	"bwa_startup/user"
 	"log"
@@ -15,7 +16,14 @@ import (
 func initializeEnvironment() error {
 	environment := os.Getenv("ENV")
 	err := godotenv.Load(".env." + environment)
-	return err
+	if err != nil {
+		return err
+	}
+
+	mode := os.Getenv("GIN_MODE")
+	gin.SetMode(mode)
+
+	return nil
 }
 
 func initializeDatabase() (*gorm.DB, error) {
@@ -47,7 +55,9 @@ func main() {
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
-	userHandler := handler.NewUserHandler(userService)
+	authService := auth.NewService()
+
+	userHandler := handler.NewUserHandler(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("api/v1")
