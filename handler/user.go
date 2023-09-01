@@ -3,7 +3,9 @@ package handler
 import (
 	"bwa_startup/helper"
 	"bwa_startup/user"
+	"fmt"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -100,5 +102,45 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 	}
 
 	response := helper.ApiResponse(metaMessage, http.StatusOK, "success", data, "")
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) UploadAvatar(c *gin.Context) {
+	// c.SaveUploadedFile(file, "upload")
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data, err.Error())
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	//UserUUID still hardcoded
+	// TODO : change userID with JWT services later
+	userID := "f639a4ef-585c-4744-b249-6b0a3ce7fc7e"
+	fileFormat := filepath.Ext(file.Filename)
+
+	path := fmt.Sprintf("images/%s%s", userID, fileFormat)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data, err.Error())
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	_, err = h.userService.SaveAvatar(userID, path)
+
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.ApiResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data, err.Error())
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helper.ApiResponse("Avatar succesfuly uploaded", http.StatusOK, "success", data, "")
 	c.JSON(http.StatusOK, response)
 }
