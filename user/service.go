@@ -94,6 +94,7 @@ func (s *service) SaveAvatar(ID string, fileLocation string) (User, error) {
 	}
 
 	user.AvatarFileName = fileLocation
+	user.UpdatedAt = time.Now()
 
 	updatedUser, err := s.repository.Update(user)
 	if err != nil {

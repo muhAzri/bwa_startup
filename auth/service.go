@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -24,6 +25,7 @@ func NewService() *jwtService {
 func (s *jwtService) GenerateToken(userID string) (string, error) {
 	claim := jwt.MapClaims{}
 	claim["user_id"] = userID
+	claim["nonce"] = time.Now().UnixNano()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	signedToken, err := token.SignedString(s.SecretKey)
