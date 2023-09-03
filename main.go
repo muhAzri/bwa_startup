@@ -2,9 +2,11 @@ package main
 
 import (
 	"bwa_startup/auth"
+	"bwa_startup/campaign"
 	"bwa_startup/handler"
 	"bwa_startup/helper"
 	"bwa_startup/user"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -60,6 +62,16 @@ func main() {
 	helper.MigrateDatabase(db)
 
 	userRepository := user.NewRepository(db)
+	campaingRepository := campaign.NewRepository(db)
+
+	campaigns, err := campaingRepository.FindByUserId("f0deedff-d3ee-4ec0-b286-a805c70a315c", 1, 2)
+	for _, campaign := range campaigns {
+		// fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 
