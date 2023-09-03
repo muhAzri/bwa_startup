@@ -57,6 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error initializing database:", err)
 	}
+	helper.MigrateDatabase(db)
 
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
