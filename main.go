@@ -6,7 +6,6 @@ import (
 	"bwa_startup/handler"
 	"bwa_startup/helper"
 	"bwa_startup/user"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -68,15 +67,8 @@ func main() {
 	authService := auth.NewService()
 	campaignService := campaign.NewService(campaignRepository)
 
-	userID := "f0deedff-d3ee-4ec0-b286-a805c70a315c"
-	page := 2
-	limit := 2
-
-	campaigns, err := campaignService.FindCampaign(&userID, &page, &limit)
-
-	fmt.Println(len(campaigns))
-
 	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
 	api := router.Group("api/v1")
@@ -85,7 +77,8 @@ func main() {
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/check-email", userHandler.CheckEmailAvailability)
 	api.POST("/avatar", authMiddleware(authService, userService), userHandler.UploadAvatar)
-	// router.Run()
+	api.GET("/campaign", campaignHandler.GetCampaigns)
+	router.Run()
 
 }
 

@@ -23,7 +23,7 @@ func ApiResponse(message string, code int, status string, data interface{}, errM
 
 	var jsonResponse Response
 
-	if errMessage != "" {
+	if errMessage != nil {
 		jsonResponse = Response{
 			Meta:  meta,
 			Error: errMessage, // Set the error message

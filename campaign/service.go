@@ -1,7 +1,7 @@
 package campaign
 
 type Service interface {
-	FindCampaign(userID *string, page *int, limit *int) ([]Campaign, error)
+	GetCampaign(userID *string, page *int, limit *int) ([]Campaign, error)
 }
 
 type service struct {
@@ -12,7 +12,7 @@ func NewService(repository Repository) *service {
 	return &service{repository}
 }
 
-func (s *service) FindCampaign(userID *string, page *int, limit *int) ([]Campaign, error) {
+func (s *service) GetCampaign(userID *string, page *int, limit *int) ([]Campaign, error) {
 	if page == nil {
 		defaultPage := 1
 		page = &defaultPage
@@ -24,8 +24,16 @@ func (s *service) FindCampaign(userID *string, page *int, limit *int) ([]Campaig
 	}
 
 	if userID != nil {
-		return s.repository.FindByUserId(*userID, *page, *limit)
+		campaigns, err := s.repository.FindByUserId(*userID, *page, *limit)
+		if err != nil {
+			return campaigns, err
+		}
+		return campaigns, nil
 	}
 
-	return s.repository.FindAll(*page, *limit)
+	campaigns, err := s.repository.FindAll(*page, *limit)
+	if err != nil {
+		return campaigns, err
+	}
+	return campaigns, nil
 }
