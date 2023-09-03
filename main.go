@@ -62,18 +62,19 @@ func main() {
 	helper.MigrateDatabase(db)
 
 	userRepository := user.NewRepository(db)
-	campaingRepository := campaign.NewRepository(db)
-
-	campaigns, err := campaingRepository.FindByUserId("f0deedff-d3ee-4ec0-b286-a805c70a315c", 1, 2)
-	for _, campaign := range campaigns {
-		// fmt.Println(campaign.Name)
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
+	campaignRepository := campaign.NewRepository(db)
 
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
+	campaignService := campaign.NewService(campaignRepository)
+
+	userID := "f0deedff-d3ee-4ec0-b286-a805c70a315c"
+	page := 2
+	limit := 2
+
+	campaigns, err := campaignService.FindCampaign(&userID, &page, &limit)
+
+	fmt.Println(len(campaigns))
 
 	userHandler := handler.NewUserHandler(userService, authService)
 
@@ -84,7 +85,7 @@ func main() {
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/check-email", userHandler.CheckEmailAvailability)
 	api.POST("/avatar", authMiddleware(authService, userService), userHandler.UploadAvatar)
-	router.Run()
+	// router.Run()
 
 }
 
