@@ -52,7 +52,7 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	formatter := user.FormatUser(newUser, token)
 
-	response := helper.ApiResponse("Account has been created", http.StatusOK, "success", formatter, "")
+	response := helper.ApiResponse("Account has been created", http.StatusOK, "success", formatter, nil)
 	c.JSON(http.StatusOK, response)
 
 }
@@ -87,7 +87,7 @@ func (h *userHandler) Login(c *gin.Context) {
 
 	formatter := user.FormatUser(loggedinUser, token)
 
-	response := helper.ApiResponse("Succesfully logged in", http.StatusOK, "success", formatter, "")
+	response := helper.ApiResponse("Succesfully logged in", http.StatusOK, "success", formatter, nil)
 	c.JSON(http.StatusOK, response)
 
 }
@@ -120,7 +120,7 @@ func (h *userHandler) CheckEmailAvailability(c *gin.Context) {
 		metaMessage = "Email is available"
 	}
 
-	response := helper.ApiResponse(metaMessage, http.StatusOK, "success", data, "")
+	response := helper.ApiResponse(metaMessage, http.StatusOK, "success", data, nil)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -136,10 +136,8 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	currentUser := c.MustGet("currentUser").(user.User)
 	userID := currentUser.ID.String()
 
-	// Generate a unique filename for the PNG image.
 	pngPath := fmt.Sprintf("images/%s.png", userID)
 
-	// Open the uploaded file.
 	uploadedFile, err := file.Open()
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
@@ -149,7 +147,6 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 	}
 	defer uploadedFile.Close()
 
-	// Decode the uploaded image.
 	img, _, err := image.Decode(uploadedFile)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
@@ -158,7 +155,6 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	// Save the decoded image in PNG format.
 	err = imaging.Save(img, pngPath)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}
@@ -167,7 +163,6 @@ func (h *userHandler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	// Update the user's avatar path in the database.
 	_, err = h.userService.SaveAvatar(userID, pngPath)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}

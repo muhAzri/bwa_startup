@@ -3,7 +3,6 @@ package handler
 import (
 	"bwa_startup/campaign"
 	"bwa_startup/helper"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -60,9 +59,7 @@ func (h *campaignHandler) GetCampaigns(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(campaigns != nil)
-
-	response := helper.ApiResponse("List of campaigns", http.StatusOK, "success", campaigns, nil)
+	response := helper.ApiResponse("List of campaigns", http.StatusOK, "success", campaign.FormatCampaigns(campaigns), nil)
 	c.JSON(http.StatusOK, response)
 
 }

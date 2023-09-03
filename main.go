@@ -20,7 +20,7 @@ import (
 )
 
 func initializeEnvironment() error {
-	environment := os.Getenv("ENV")
+	environment := os.Getenv("env")
 	err := godotenv.Load(".env." + environment)
 	if err != nil {
 		return err
@@ -71,6 +71,8 @@ func main() {
 	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+	router.Static("/images", "./images")
+
 	api := router.Group("api/v1")
 
 	api.POST("/user", userHandler.RegisterUser)
