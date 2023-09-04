@@ -2,6 +2,7 @@ package main
 
 import (
 	"bwa_startup/auth"
+	"bwa_startup/campaign"
 	"bwa_startup/handler"
 	"bwa_startup/helper"
 	"bwa_startup/user"
@@ -19,7 +20,7 @@ import (
 )
 
 func initializeEnvironment() error {
-	environment := os.Getenv("ENV")
+	environment := os.Getenv("env")
 	err := godotenv.Load(".env." + environment)
 	if err != nil {
 		return err
@@ -57,20 +58,28 @@ func main() {
 	if err != nil {
 		log.Fatal("Error initializing database:", err)
 	}
+	helper.MigrateDatabase(db)
 
 	userRepository := user.NewRepository(db)
+	campaignRepository := campaign.NewRepository(db)
+
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
+	campaignService := campaign.NewService(campaignRepository)
 
 	userHandler := handler.NewUserHandler(userService, authService)
+	campaignHandler := handler.NewCampaignHandler(campaignService)
 
 	router := gin.Default()
+	router.Static("/images", "./images")
+
 	api := router.Group("api/v1")
 
 	api.POST("/user", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/check-email", userHandler.CheckEmailAvailability)
 	api.POST("/avatar", authMiddleware(authService, userService), userHandler.UploadAvatar)
+	api.GET("/campaign", campaignHandler.GetCampaigns)
 	router.Run()
 
 }
