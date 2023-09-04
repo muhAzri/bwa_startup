@@ -1,6 +1,7 @@
 package campaign
 
 import (
+	"bwa_startup/user"
 	"time"
 
 	"github.com/google/uuid"
@@ -10,10 +11,11 @@ import (
 type Campaign struct {
 	ID               uuid.UUID `gorm:"type:char(36);primary_key"`
 	UserID           uuid.UUID `gorm:"type:char(36);index;ForeignKey:UserID"`
-	Name             string    `gorm:"type:varchar(255)"`
-	ShortDescription string    `gorm:"type:text"`
-	Description      string    `gorm:"type:text"`
-	Perks            string    `gorm:"type:text"`
+	User             user.User
+	Name             string `gorm:"type:varchar(255)"`
+	ShortDescription string `gorm:"type:text"`
+	Description      string `gorm:"type:text"`
+	Perks            string `gorm:"type:text"`
 	BackerCount      int
 	GoalAmount       int
 	CurrentAmount    int
@@ -26,7 +28,6 @@ type Campaign struct {
 type CampaignImage struct {
 	ID         uuid.UUID `gorm:"type:char(36);primary_key"`
 	CampaignID uuid.UUID `gorm:"type:char(36);index;ForeignKey:CampaignID"`
-	Campaign   Campaign  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	FileName   string
 	IsPrimary  int
 	CreatedAt  time.Time `gorm:"type:datetime"`

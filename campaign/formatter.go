@@ -1,6 +1,8 @@
 package campaign
 
 import (
+	"strings"
+
 	"github.com/google/uuid"
 )
 
@@ -43,4 +45,74 @@ func FormatCampaigns(campaigns []Campaign) []CampaignFormatter {
 	}
 
 	return campaignsFormatter
+}
+
+type CampaignDetailFormatter struct {
+	ID               uuid.UUID                `json:"id"`
+	UserID           uuid.UUID                `json:"user_id"`
+	Name             string                   `json:"name"`
+	ShortDescription string                   `json:"short_description"`
+	Description      string                   `json:"description"`
+	ImageUrl         string                   `json:"image_url"`
+	GoalAmount       int                      `json:"goal_amount"`
+	CurrentAmount    int                      `json:"current_amount"`
+	Slug             string                   `json:"slug"`
+	Perks            []string                 `json:"perks"`
+	User             CampaignUserFormatter    `json:"user"`
+	Images           []CampaignImageFormatter `json:"images"`
+}
+
+type CampaignUserFormatter struct {
+	Name     string `json:"name"`
+	ImageUrl string `json:"image_url"`
+}
+
+type CampaignImageFormatter struct {
+	ImageUrl  string `json:"image_url"`
+	IsPrimary bool   `json:"is_primary"`
+}
+
+func FormatCampaignDetail(campaign Campaign) CampaignDetailFormatter {
+	formatter := CampaignDetailFormatter{
+		ID:               campaign.ID,
+		UserID:           campaign.UserID,
+		Name:             campaign.Name,
+		ShortDescription: campaign.ShortDescription,
+		Description:      campaign.Description,
+		GoalAmount:       campaign.GoalAmount,
+		CurrentAmount:    campaign.CurrentAmount,
+		Slug:             campaign.Slug,
+	}
+
+	if len(campaign.CampaignImages) > 0 {
+		formatter.ImageUrl = campaign.CampaignImages[0].FileName
+	}
+
+	var perks []string
+	for _, perk := range strings.Split(campaign.Perks, ",") {
+		perks = append(perks, strings.TrimSpace(perk))
+	}
+
+	formatter.Perks = perks
+
+	userFormatter := CampaignUserFormatter{
+		Name:     campaign.User.Name,
+		ImageUrl: campaign.User.AvatarFileName,
+	}
+
+	formatter.User = userFormatter
+
+	var images []CampaignImageFormatter
+	for _, image := range campaign.CampaignImages {
+		campaignImageFormatter := CampaignImageFormatter{
+			ImageUrl:  image.FileName,
+			IsPrimary: image.IsPrimary != 0,
+		}
+		images = append(images, campaignImageFormatter)
+	}
+
+	formatter.Images = images
+
+	return formatter
+
 }
