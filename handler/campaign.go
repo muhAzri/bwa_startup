@@ -112,3 +112,47 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	response := helper.ApiResponse("Campaigns created successfully", http.StatusOK, "success", campaign.FormatCampaign(newCampaign), nil)
 	c.JSON(http.StatusOK, response)
 }
+
+// API endpoint PUT /api/v1/campaign
+func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
+	var inputID campaign.GetCampaignDetailInput
+	err := c.ShouldBindUri(&inputID)
+
+	if err != nil {
+		response := helper.ApiResponse("Failed to get update campaign: Invalid request", http.StatusBadRequest, "error", nil, err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	var input campaign.CreateCampaignInput
+
+	err = c.ShouldBindJSON(&input)
+
+	if err != nil {
+		response := helper.ApiResponse("Failed to update campaign: Invalid request", http.StatusBadRequest, "error", nil, err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+
+	input.User = currentUser
+
+	updatedCampaign, err := h.service.UpdateCampaign(inputID, input)
+
+	if err != nil {
+		if err.Error() == "you not allowed to access this campaign" {
+			response := helper.ApiResponse("Unauthorized", http.StatusUnauthorized, "error", nil, err.Error())
+			c.JSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		response := helper.ApiResponse("Failed to update campaign", http.StatusBadRequest, "error", nil, err.Error())
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	response := helper.ApiResponse("Campaigns updated successfully", http.StatusOK, "success", campaign.FormatCampaign(updatedCampaign), nil)
+	c.JSON(http.StatusOK, response)
+
+}
