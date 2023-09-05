@@ -1,8 +1,16 @@
 package campaign
 
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+	"github.com/gosimple/slug"
+)
+
 type Service interface {
 	GetCampaign(userID *string, page *int, limit *int) ([]Campaign, error)
 	GetCampaignByID(input GetCampaignDetailInput) (Campaign, error)
+	CreateCampaign(input CreateCampaignInput) (Campaign, error)
 }
 
 type service struct {
@@ -47,4 +55,26 @@ func (s *service) GetCampaignByID(input GetCampaignDetailInput) (Campaign, error
 	}
 
 	return campaign, nil
+}
+
+func (s *service) CreateCampaign(input CreateCampaignInput) (Campaign, error) {
+	slugString := fmt.Sprintf("%s %s", input.Name, input.User.ID)
+
+	campaign := Campaign{
+		ID:               uuid.New(),
+		Name:             input.Name,
+		ShortDescription: input.ShortDescription,
+		Description:      input.Description,
+		GoalAmount:       input.GoalAmount,
+		Perks:            input.Perks,
+		UserID:           input.User.ID,
+		Slug:             slug.Make(slugString),
+	}
+
+	newCampaign, err := s.repository.Save(campaign)
+	if err != nil {
+		return newCampaign, err
+	}
+
+	return newCampaign, nil
 }
